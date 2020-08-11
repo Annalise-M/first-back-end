@@ -3,14 +3,29 @@ const app = express();
 const port = 3000;
 const cors = require('cors');
 const geoData = require('./data/geo.js');
+const weatherData = require('./data/weather.js');
 
 app.use(cors());
 
 app.use(express.static('public'));
 
-// placeholder for future munging
-function getLatLong(cityName) {
+// munge function
+function getWeather(lat, lon) {
+    //TODO: we make an api call to get the weather
+    const data = weatherData.data
 
+    const forecastArray = data.map((weatherItem) => {
+        return {
+            forecast: weatherItem.weather.description,
+            time: new Date(weatherItem.ts * 1000),
+        };
+    });
+    return forecastArray;
+}
+
+// munge function
+function getLatLong(cityName) {
+//TODO: we make an api call to get the GEOcity
     const city = geoData[0];
     
     return {
@@ -18,21 +33,32 @@ function getLatLong(cityName) {
         latitude: city.lat,
         longitude: city.lon
     };
-
 }
 
-app.get('/location', (req, res) => {
-  const userInput = req.query.search;
 
-    const mungedData = getLatLong(userInput);
-    res.json(mungedData);
-        
-    // formatted_query: 'Seattle, WA, USA',
-    // latitude: "47.606210",
-    // longitude: "-122.332071"
-    
+app.get('/location', (req, res) => {
+    try {
+        const userInput = req.query.search;
+
+        const mungedData = getLatLong(userInput);
+        res.json(mungedData);
+    } catch (e) {
+        res.status(418).json({ error: e.message });
+    }
 })
-app.get('')
+
+
+app.get('/weather', (req, res) => {
+    try {
+        const userLat = req.query.latitude;
+        const userLon = req.query.longitude;
+
+        const mungedData = getWeather(userLat, userLon);
+        res.json(mungedData);
+    } catch (e) {
+        res.status(418).json({ error: e.message });
+    }
+})
 
 
 app.listen(port, () => {
