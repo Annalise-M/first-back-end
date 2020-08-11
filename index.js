@@ -1,33 +1,38 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require('express');
+const app = express();
+const port = 3000;
+const cors = require('cors');
+const geoData = require('./data/geo.js');
 
-// console.log('hello worldsssss');
+app.use(cors());
 
-app.get('/', (req, res) => {
-  res.send('hello worldsssss')
-})
+app.use(express.static('public'));
 
-app.get('/sup-buttercup', (req, res) => {
-    res.json({
-        name: req.query.name,
-        code: req.query.password
-    });
-  });
+// placeholder for future munging
+function getLatLong(cityName) {
 
-app.get('/babessss', (req, res) => {
-    // console.log(req.headers);
-    // console.log(req.query.username);
-    // console.log(req.query.password);
+    const city = geoData[0];
     
-    // only one res.send at a time // Only RES. method used ONCE
-    // res.send(`hey there beautiful. Thanks for logging on ${req.query.username}. Here is your password: ${req.query.password}`);
+    return {
+        formatted_query: city.display_name,
+        latitude: city.lat,
+        longitude: city.lon
+    };
 
-    res.json({
-        name: req.query.username,
-        code: req.query.password
-    });
-  });
+}
+
+app.get('/location', (req, res) => {
+  const userInput = req.query.search;
+
+    const mungedData = getLatLong(userInput);
+    res.json(mungedData);
+        
+    // formatted_query: 'Seattle, WA, USA',
+    // latitude: "47.606210",
+    // longitude: "-122.332071"
+    
+})
+app.get('')
 
 
 app.listen(port, () => {
