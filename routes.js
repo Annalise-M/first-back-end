@@ -22,7 +22,7 @@ app.use(express.static('public'));
 const { 
     GEOCODE_API_KEY,
     WEATHER_BIT_KEY,
-    // HIKING_PROJECT_KEY,
+    HIKING_PROJECT_KEY
     // YELP_KEY
 } = process.env;
 
@@ -76,6 +76,36 @@ async function getWeather(lat, lon) {
 
 //need to implement the await function below once WEATHER_API placed   
 app.get('/weather', async (req, res) => {
+    try {
+        const userLat = req.query.latitude;
+        const userLon = req.query.longitude;
+
+        const mungedData = await getWeather(userLat, userLon);
+        res.json(mungedData);
+    } catch (e) {
+        res.status(418).json({ error: e.message });
+    }
+})
+
+
+async function getTrails(lat, lon) {
+    //TODO: we make an api call to get the weather
+    const response = await request.get(`https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&maxDistance=200&key=${HIKING_PROJECT_KEY}`);
+
+console.log(lat, lon);
+    const forecastArray = response.body.trails.map((trailsItem) => {
+        return {
+            name: trailsItem.trails.name,
+            location: trailsItem.trails.longitude,
+            
+        };
+    });
+    
+    return forecastArray;
+}
+
+//need to implement the await function below once WEATHER_API placed   
+app.get('/trails', async (req, res) => {
     try {
         const userLat = req.query.latitude;
         const userLon = req.query.longitude;
