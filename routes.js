@@ -16,6 +16,7 @@ const request = require('superagent');
 // 5. change its shape to fit the contract with the front end
 // 6. now that getLatLon is asynchronous, we must AWAIT it
 app.use(cors());
+
 app.use(express.static('public'));
 
 const { 
@@ -52,50 +53,43 @@ app.get('/location', async(req, res) => {
     }
 });
 
-
+// module.exports = {
+//     app
+// };
 // WORK ON ONCE I GET ABOVE WORKING
 // munge function
-// function getWeather(lat, lon) {
-//     //TODO: we make an api call to get the weather
-//     const response = request.get(`https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&maxDistance=200&key={WEATHER_BIT_KEY}`);
 
-//     const forecastArray = data.map((weatherItem) => {
-//         return {
-//             forecast: weatherItem.weather.description,
-//             time: new Date(weatherItem.ts * 1000),
-//         };
-//     });
-//     return forecastArray;
-// }
-// need to implement the await function below once WEATHER_API placed   
-// app.get('/weather', (req, res) => {
-//     try {
-//         const userLat = req.query.latitude;
-//         const userLon = req.query.longitude;
+async function getWeather(lat, lon) {
+    //TODO: we make an api call to get the weather
+    const response = await request.get(`https://api.weatherbit.io/v2.0/forecast/daily?&lat=${lat}&lon=${lon}&key=${WEATHER_BIT_KEY}`);
 
-//         const mungedData = getWeather(userLat, userLon);
-//         res.json(mungedData);
-//     } catch (e) {
-//         res.status(418).json({ error: e.message });
-//     }
-// })
 
-// app.get('/chars', async (req, res) => {
-//     try {
-//         const response = await request.get('https:');
+    const forecastArray = response.body.data.map((weatherItem) => {
+        return {
+            forecast: weatherItem.weather.description,
+            time: new Date(weatherItem.ts * 1000),
+        };
+    });
+    
+    return forecastArray;
+}
 
-//         const pokemon = response.body.results;
-//     } catch (e) {
-//         res.status(418).json({ error: e.message })
-//     }
-// })
+//need to implement the await function below once WEATHER_API placed   
+app.get('/weather', async (req, res) => {
+    try {
+        const userLat = req.query.latitude;
+        const userLon = req.query.longitude;
+
+        const mungedData = await getWeather(userLat, userLon);
+        res.json(mungedData);
+    } catch (e) {
+        res.status(418).json({ error: e.message });
+    }
+})
+
 
 module.exports = {
     app
 };
-
-
-
-
 
 
